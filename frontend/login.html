@@ -55,7 +55,6 @@
 
         button:disabled {
             background: #999;
-            cursor: not-allowed;
         }
 
         a {
@@ -79,19 +78,11 @@
 
     <form id="loginForm">
 
-        <input
-            type="email"
-            id="email"
-            placeholder="Enter Email"
-            required
-        >
+        <input type="email" id="email"
+               placeholder="Enter Email" required>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Enter Password"
-            required
-        >
+        <input type="password" id="password"
+               placeholder="Enter Password" required>
 
         <button type="submit" id="loginButton">Login</button>
 
@@ -108,77 +99,71 @@
 </div>
 
 <script>
-    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        const message = document.getElementById("message");
-        const loginButton = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+    const button = document.getElementById("loginButton");
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-        loginButton.disabled = true;
-        loginButton.innerText = "Logging in...";
+    button.disabled = true;
+    button.innerText = "Logging in...";
+    message.innerText = "Please wait...";
 
-        message.style.color = "black";
-        message.innerText = "Please wait...";
+    try {
 
-        try {
-
-            const response = await fetch(
-                "http://54.173.242.63:3001/users/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
-
-                // Save JWT token
-                localStorage.setItem("token", data.token);
-
-                // Save logged-in user details
-                localStorage.setItem("user", JSON.stringify(data.user));
-
-                message.style.color = "green";
-                message.innerText = "Login successful! Redirecting...";
-
-                // Redirect to home page
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 1000);
-
-            } else {
-
-                message.style.color = "red";
-                message.innerText = data.message || "Login failed";
-
-                loginButton.disabled = false;
-                loginButton.innerText = "Login";
+        const response = await fetch(
+            "http://54.173.242.63:3001/users/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
             }
+        );
 
-        } catch (error) {
+        const data = await response.json();
 
-            console.error("Login error:", error);
+        if (response.ok) {
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            message.style.color = "green";
+            message.innerText = "Login successful! Redirecting...";
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1000);
+
+        } else {
 
             message.style.color = "red";
-            message.innerText = "Unable to connect to User Service";
+            message.innerText = data.message || "Login failed";
 
-            loginButton.disabled = false;
-            loginButton.innerText = "Login";
+            button.disabled = false;
+            button.innerText = "Login";
         }
 
-    });
+    } catch (error) {
+
+        console.error(error);
+
+        message.style.color = "red";
+        message.innerText = "Unable to connect to User Service";
+
+        button.disabled = false;
+        button.innerText = "Login";
+    }
+
+});
 </script>
 
 </body>
