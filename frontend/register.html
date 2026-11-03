@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Register</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .register-box {
+            background: white;
+            padding: 35px;
+            width: 350px;
+            max-width: 90%;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px #0002;
+            text-align: center;
+        }
+
+        h2 {
+            color: #172337;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ff9f00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        a {
+            color: #2874f0;
+            text-decoration: none;
+        }
+
+        #message {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="register-box">
+
+    <h2>Create Account</h2>
+
+    <p>Join ShopEasy today!</p>
+
+    <form id="registerForm">
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Enter Full Name"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter Email"
+            required
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Create Password"
+            required
+        >
+
+        <button type="submit">Register</button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <p>Already have an account?
+        <a href="login.html">Login</a>
+    </p>
+
+    <p><a href="index.html">Back to Home</a></p>
+
+</div>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const message = document.getElementById("message");
+
+        try {
+            const response = await fetch("http://54.173.242.63:3001/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                message.style.color = "green";
+                message.innerText = data.message || "Registration successful!";
+            } else {
+                message.style.color = "red";
+                message.innerText = data.message || data.error || "Registration failed";
+            }
+
+        } catch (error) {
+            message.style.color = "red";
+            message.innerText = "Unable to connect to User Service";
+        }
+    });
+</script>
+
+</body>
+</html>
