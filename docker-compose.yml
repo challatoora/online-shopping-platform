@@ -1,0 +1,71 @@
+services:
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: unless-stopped
+    env_file:
+      - ./user-service/.env
+    environment:
+      PORT: 3001
+      DB_HOST: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3001:3001"
+    networks:
+      - shopeasy-network
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    restart: unless-stopped
+    env_file:
+      - ./product-service/.env
+    environment:
+      PORT: 3002
+      DB_HOST: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3002:3002"
+    networks:
+      - shopeasy-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    restart: unless-stopped
+    env_file:
+      - ./order-service/.env
+    environment:
+      PORT: 3003
+      DB_HOST: host.docker.internal
+      USER_SERVICE_URL: http://user-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3003:3003"
+    depends_on:
+      - user-service
+      - product-service
+    networks:
+      - shopeasy-network
+
+  frontend:
+    build: ./frontend
+    container_name: shopeasy-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - shopeasy-network
+
+networks:
+  shopeasy-network:
+    driver: bridge
