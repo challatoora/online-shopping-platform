@@ -217,6 +217,36 @@
             color: #198754;
         }
 
+        /* ORDER MANAGEMENT */
+        .order-box {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000012;
+        }
+
+        .order-box h3 {
+            margin-bottom: 12px;
+        }
+
+        .order-box p {
+            margin: 8px 0;
+        }
+
+        .order-box select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 8px;
+            max-width: 100%;
+        }
+
+        .order-status {
+            font-weight: bold;
+            color: #2874f0;
+        }
+
         footer {
             background: #172337;
             color: white;
@@ -250,6 +280,7 @@
         <a href="index.html">Home</a>
         <a href="#products">Products</a>
         <a href="#manage">Manage Products</a>
+        <a href="#orders">Manage Orders</a>
         <a href="login.html" class="nav-button login-btn">Login</a>
         <a href="register.html" class="nav-button register-btn">Register</a>
 
@@ -381,6 +412,21 @@
         <p class="message" id="orderMessage"></p>
 
     </div>
+
+</section>
+
+<!-- ORDER MANAGEMENT -->
+<section class="section" id="orders">
+
+    <h2>Order Management</h2>
+
+    <button onclick="loadOrders()">Refresh Orders</button>
+
+    <p id="ordersMessage" class="message">
+        Loading orders...
+    </p>
+
+    <div id="ordersList"></div>
 
 </section>
 
@@ -910,7 +956,6 @@
                 throw new Error(result.message || "Order failed");
             }
 
-            // Display successful order
             message.innerText =
                 "Order placed successfully! Order ID: " +
                 result.orderId +
@@ -922,8 +967,10 @@
 
             saveCart();
 
-            // Reload products
             await loadProducts();
+
+            // Refresh order management
+            await loadOrders();
 
         } catch (error) {
 
@@ -940,9 +987,175 @@
         }
     }
 
+    // LOAD ALL ORDERS
+    async function loadOrders() {
+
+        const message = document.getElementById("ordersMessage");
+        const ordersList = document.getElementById("ordersList");
+
+        message.innerText = "Loading orders...";
+        ordersList.innerHTML = "";
+
+        try {
+
+            const response = await fetch(ORDER_API);
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load orders");
+            }
+
+            const orders = Array.isArray(result)
+                ? result
+                : result.orders || [];
+
+            if (orders.length === 0) {
+                message.innerText = "No orders found.";
+                return;
+            }
+
+            message.innerText = "Total orders: " + orders.length;
+
+            orders.forEach(order => {
+
+                const box = document.createElement("div");
+                box.className = "order-box";
+
+                const heading = document.createElement("h3");
+                heading.textContent = "Order #" + order.id;
+
+                const user = document.createElement("p");
+                user.textContent = "Customer ID: " + order.user_id;
+
+                const amount = document.createElement("p");
+                amount.textContent =
+                    "Total Amount: " + formatPrice(order.total_amount);
+
+                const status = document.createElement("p");
+                status.className = "order-status";
+                status.textContent = "Current Status: " + order.status;
+
+                const label = document.createElement("label");
+                label.textContent = "Change Status: ";
+
+                const select = document.createElement("select");
+
+                const statuses = [
+                    "PENDING",
+                    "CONFIRMED",
+                    "SHIPPED",
+                    "DELIVERED",
+                    "CANCELLED"
+                ];
+
+                statuses.forEach(value => {
+
+                    const option = document.createElement("option");
+                    option.value = value;
+                    option.textContent = value;
+
+                    if (value === order.status) {
+                        option.selected = true;
+                    }
+
+                    select.appendChild(option);
+
+                });
+
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Update Status";
+
+                updateButton.addEventListener("click", async () => {
+
+                    const newStatus = select.value;
+
+                    if (newStatus === order.status) {
+                        alert("Please select a different status.");
+                        return;
+                    }
+
+                    if (!confirm(
+                        "Change Order #" + order.id +
+                        " status to " + newStatus + "?"
+                    )) {
+                        return;
+                    }
+
+                    try {
+
+                        updateButton.disabled = true;
+                        updateButton.textContent = "Updating...";
+
+                        const updateResponse = await fetch(
+                            `${ORDER_API}/${order.id}/status`,
+                            {
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    status: newStatus
+                                })
+                            }
+                        );
+
+                        const updateResult = await updateResponse.json();
+
+                        if (!updateResponse.ok) {
+                            throw new Error(
+                                updateResult.message ||
+                                "Unable to update order status"
+                            );
+                        }
+
+                        alert("Order status updated successfully!");
+
+                        await loadOrders();
+
+                    } catch (error) {
+
+                        alert(error.message);
+                        console.error(error);
+
+                    } finally {
+
+                        updateButton.disabled = false;
+                        updateButton.textContent = "Update Status";
+
+                    }
+
+                });
+
+                label.appendChild(select);
+
+                box.append(
+                    heading,
+                    user,
+                    amount,
+                    status,
+                    label,
+                    updateButton
+                );
+
+                ordersList.appendChild(box);
+
+            });
+
+        } catch (error) {
+
+            message.innerText =
+                "Unable to load orders. Check Order Service and CORS.";
+
+            console.error(error);
+
+        }
+    }
+
     // INITIAL LOAD
     loadProducts();
     displayCart();
+    loadOrders();
 
 </script>
 
