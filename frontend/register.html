@@ -133,7 +133,13 @@
 
             if (response.ok) {
                 message.style.color = "green";
-                message.innerText = data.message || "Registration successful!";
+                message.innerText = "Registration successful! Redirecting...";
+
+                document.getElementById("registerForm").reset();
+
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1500);
             } else {
                 message.style.color = "red";
                 message.innerText = data.message || data.error || "Registration failed";
