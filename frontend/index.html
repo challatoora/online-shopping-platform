@@ -30,7 +30,9 @@
             gap: 15px;
         }
 
-        header h2 { color: #ffdd57; }
+        header h2 {
+            color: #ffdd57;
+        }
 
         nav {
             display: flex;
@@ -50,8 +52,14 @@
             font-weight: bold;
         }
 
-        .login-btn { background: white; color: #172337; }
-        .register-btn { background: #ff9f00; }
+        .login-btn {
+            background: white;
+            color: #172337;
+        }
+
+        .register-btn {
+            background: #ff9f00;
+        }
 
         .cart-link {
             background: #ffdd57;
@@ -123,13 +131,35 @@
             margin: 4px;
         }
 
-        button:hover { background: #e68a00; }
+        button:hover {
+            background: #e68a00;
+        }
 
-        .delete-btn { background: #dc3545; }
-        .delete-btn:hover { background: #b02a37; }
+        .delete-btn {
+            background: #dc3545;
+        }
 
-        .cancel-btn { background: #6c757d; }
-        .edit-btn { background: #2874f0; }
+        .delete-btn:hover {
+            background: #b02a37;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+        }
+
+        .edit-btn {
+            background: #2874f0;
+        }
+
+        .checkout-btn {
+            background: #198754;
+            padding: 13px 22px;
+            font-size: 16px;
+        }
+
+        .checkout-btn:hover {
+            background: #146c43;
+        }
 
         button:disabled {
             background: gray;
@@ -155,7 +185,9 @@
             padding: 15px;
         }
 
-        .card h3 { margin: 10px 0; }
+        .card h3 {
+            margin: 10px 0;
+        }
 
         .price {
             color: #2874f0;
@@ -180,6 +212,11 @@
             font-weight: bold;
         }
 
+        #orderMessage {
+            margin-top: 18px;
+            color: #198754;
+        }
+
         footer {
             background: #172337;
             color: white;
@@ -189,9 +226,17 @@
         }
 
         @media(max-width: 600px) {
-            header { justify-content: center; }
-            nav { justify-content: center; }
-            .hero h1 { font-size: 28px; }
+            header {
+                justify-content: center;
+            }
+
+            nav {
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
@@ -207,6 +252,7 @@
         <a href="#manage">Manage Products</a>
         <a href="login.html" class="nav-button login-btn">Login</a>
         <a href="register.html" class="nav-button register-btn">Register</a>
+
         <a href="#cart" class="cart-link">
             🛒 Cart: <span id="cartCount">0</span>
         </a>
@@ -324,6 +370,16 @@
             Clear Cart
         </button>
 
+        <button
+            class="checkout-btn"
+            id="checkoutButton"
+            onclick="placeOrder()"
+        >
+            Place Order
+        </button>
+
+        <p class="message" id="orderMessage"></p>
+
     </div>
 
 </section>
@@ -335,7 +391,9 @@
 
 <script>
 
+    // API URLS
     const API = "http://54.173.242.63:3002/products";
+    const ORDER_API = "http://54.173.242.63:3003/orders";
 
     let products = [];
 
@@ -695,6 +753,8 @@
 
         saveCart();
 
+        document.getElementById("orderMessage").innerText = "";
+
     }
 
     // SAVE CART
@@ -780,6 +840,104 @@
         document.getElementById("cartTotal").innerText =
             "Total: " + formatPrice(total);
 
+    }
+
+    // PLACE ORDER
+    async function placeOrder() {
+
+        const message = document.getElementById("orderMessage");
+        const button = document.getElementById("checkoutButton");
+
+        message.innerText = "";
+
+        // Check login
+        const userData = localStorage.getItem("user");
+
+        if (!userData) {
+            message.innerText = "Please login before placing an order.";
+            return;
+        }
+
+        let user;
+
+        try {
+            user = JSON.parse(userData);
+        } catch (error) {
+            message.innerText = "Invalid login information. Please login again.";
+            return;
+        }
+
+        if (!user || !user.id) {
+            message.innerText = "User ID not found. Please login again.";
+            return;
+        }
+
+        // Check cart
+        if (cart.length === 0) {
+            message.innerText = "Your cart is empty. Add products first.";
+            return;
+        }
+
+        // Prepare order data
+        const orderData = {
+            user_id: Number(user.id),
+
+            items: cart.map(item => ({
+                product_id: Number(item.id),
+                quantity: Number(item.quantity)
+            }))
+        };
+
+        try {
+
+            button.disabled = true;
+            button.innerText = "Processing...";
+            message.innerText = "Placing your order...";
+
+            const response = await fetch(ORDER_API, {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Order failed");
+            }
+
+            // Display successful order
+            message.innerText =
+                "Order placed successfully! Order ID: " +
+                result.orderId +
+                " | Total: " +
+                formatPrice(result.totalAmount);
+
+            // Clear cart after successful order
+            cart = [];
+
+            saveCart();
+
+            // Reload products
+            await loadProducts();
+
+        } catch (error) {
+
+            message.innerText =
+                "Unable to place order: " + error.message;
+
+            console.error("Order error:", error);
+
+        } finally {
+
+            button.disabled = false;
+            button.innerText = "Place Order";
+
+        }
     }
 
     // INITIAL LOAD
