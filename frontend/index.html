@@ -19,6 +19,7 @@
             color: #222;
         }
 
+        /* HEADER */
         header {
             background: #172337;
             color: white;
@@ -32,12 +33,14 @@
 
         header h2 {
             color: #ffdd57;
+            font-size: 26px;
         }
 
         nav {
             display: flex;
-            gap: 20px;
+            gap: 18px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         nav a {
@@ -45,6 +48,38 @@
             text-decoration: none;
         }
 
+        nav a:hover {
+            color: #ffdd57;
+        }
+
+        /* LOGIN AND REGISTER BUTTONS */
+        .nav-button {
+            padding: 10px 18px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .login-btn {
+            background: white;
+            color: #172337 !important;
+        }
+
+        .login-btn:hover {
+            background: #dddddd;
+        }
+
+        .register-btn {
+            background: #ff9f00;
+            color: white !important;
+        }
+
+        .register-btn:hover {
+            background: #e68a00;
+        }
+
+        /* CART */
         .cart {
             background: #ffdd57;
             color: #172337;
@@ -53,6 +88,7 @@
             font-weight: bold;
         }
 
+        /* HERO SECTION */
         .hero {
             background: #2874f0;
             color: white;
@@ -72,8 +108,10 @@
             max-width: 90%;
             border: none;
             border-radius: 5px;
+            outline: none;
         }
 
+        /* PRODUCTS */
         .products {
             padding: 40px 7%;
         }
@@ -94,6 +132,11 @@
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 2px 8px #00000012;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .product-image {
@@ -126,6 +169,7 @@
             background: #e68a00;
         }
 
+        /* FOOTER */
         footer {
             background: #172337;
             color: white;
@@ -133,23 +177,58 @@
             padding: 20px;
             margin-top: 30px;
         }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 600px) {
+            header {
+                justify-content: center;
+                text-align: center;
+            }
+
+            nav {
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header>
+
     <h2>ShopEasy</h2>
 
     <nav>
-        <a href="#">Home</a>
+        <a href="index.html">Home</a>
+
         <a href="#products">Products</a>
-        <span class="cart">Cart: <span id="cartCount">0</span></span>
+
+        <a href="login.html" class="nav-button login-btn">
+            Login
+        </a>
+
+        <a href="register.html" class="nav-button register-btn">
+            Register
+        </a>
+
+        <span class="cart">
+            🛒 Cart: <span id="cartCount">0</span>
+        </span>
     </nav>
+
 </header>
 
+<!-- HERO SECTION -->
 <section class="hero">
+
     <h1>Welcome to ShopEasy</h1>
+
     <p>Discover amazing products at great prices!</p>
 
     <input
@@ -159,74 +238,132 @@
         placeholder="Search products..."
         oninput="searchProducts()"
     >
+
 </section>
 
+<!-- PRODUCTS SECTION -->
 <section class="products" id="products">
+
     <h2>Our Products</h2>
 
     <div class="product-grid" id="productList">
 
+        <!-- LAPTOP -->
         <div class="card" data-name="Laptop">
+
             <div class="product-image">💻</div>
+
             <h3>Laptop</h3>
+
             <p>Powerful laptop for work and study</p>
+
             <div class="price">₹45,000</div>
-            <button onclick="addToCart()">Add to Cart</button>
+
+            <button onclick="addToCart()">
+                Add to Cart
+            </button>
+
         </div>
 
+        <!-- MOBILE -->
         <div class="card" data-name="Mobile Phone">
+
             <div class="product-image">📱</div>
+
             <h3>Mobile Phone</h3>
+
             <p>Latest smartphone with great features</p>
+
             <div class="price">₹25,000</div>
-            <button onclick="addToCart()">Add to Cart</button>
+
+            <button onclick="addToCart()">
+                Add to Cart
+            </button>
+
         </div>
 
+        <!-- HEADPHONES -->
         <div class="card" data-name="Headphones">
+
             <div class="product-image">🎧</div>
+
             <h3>Headphones</h3>
+
             <p>Enjoy high-quality music</p>
+
             <div class="price">₹2,000</div>
-            <button onclick="addToCart()">Add to Cart</button>
+
+            <button onclick="addToCart()">
+                Add to Cart
+            </button>
+
         </div>
 
+        <!-- SMART WATCH -->
         <div class="card" data-name="Smart Watch">
+
             <div class="product-image">⌚</div>
+
             <h3>Smart Watch</h3>
+
             <p>Track your daily activities</p>
+
             <div class="price">₹3,500</div>
-            <button onclick="addToCart()">Add to Cart</button>
+
+            <button onclick="addToCart()">
+                Add to Cart
+            </button>
+
         </div>
 
     </div>
+
 </section>
 
+<!-- FOOTER -->
 <footer>
+
     <p>© 2026 ShopEasy. All Rights Reserved.</p>
+
+    <p>Online Shopping Made Easy!</p>
+
 </footer>
 
+<!-- JAVASCRIPT -->
 <script>
+
     let cartCount = 0;
 
+    // ADD TO CART
     function addToCart() {
+
         cartCount++;
+
         document.getElementById("cartCount").innerText = cartCount;
+
         alert("Product added to cart!");
+
     }
 
+    // SEARCH PRODUCTS
     function searchProducts() {
+
         const searchValue =
             document.getElementById("search").value.toLowerCase();
 
         const cards = document.querySelectorAll(".card");
 
         cards.forEach(card => {
+
             const productName = card.dataset.name.toLowerCase();
 
             card.style.display =
                 productName.includes(searchValue) ? "block" : "none";
+
         });
+
     }
+
 </script>
 
 </body>
