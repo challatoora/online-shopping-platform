@@ -1,82 +1,3 @@
-// pipeline {
-//     agent any
-
-//     options {
-//         timestamps()
-//         disableConcurrentBuilds()
-//     }
-
-//     environment {
-//         APP_DIR = '/home/ec2-user/online-shopping-platform'
-//         BRANCH = 'main'
-//     }
-
-//     stages {
-
-//         stage('Git Pull') {
-//             steps {
-//                 checkout scm
-
-//                 sh '''
-//                     echo "Frontend source checked out"
-//                     git log -1 --oneline
-//                 '''
-//             }
-//         }
-
-//         stage('Trivy Scan') {
-//             steps {
-//                 sh '''
-//                     trivy fs \
-//                       --scanners vuln,misconfig,secret \
-//                       --severity CRITICAL \
-//                       --exit-code 1 \
-//                       --skip-dirs node_modules \
-//                       frontend
-//                 '''
-//             }
-//         }
-
-//         stage('Deployment') {
-//             steps {
-//                 sh '''
-//                     sudo -u ec2-user /usr/bin/git \
-//                       -C "$APP_DIR" pull --ff-only origin "$BRANCH"
-
-//                     sudo -u ec2-user /usr/bin/docker \
-//                       compose -f "$APP_DIR/docker-compose.yml" \
-//                       up -d --build --no-deps frontend
-//                 '''
-//             }
-//         }
-
-//         stage('Validation') {
-//             steps {
-//                 sh '''
-//                     sudo -u ec2-user /usr/bin/docker \
-//                       compose -f "$APP_DIR/docker-compose.yml" ps frontend
-
-//                     curl -fsS http://127.0.0.1:3000/ > /dev/null
-
-//                     echo "Frontend validation successful"
-//                 '''
-//             }
-//         }
-//     }
-
-//     post {
-//         success {
-//             echo 'Frontend pipeline completed successfully!'
-//         }
-
-//         failure {
-//             echo 'Frontend pipeline failed. Check console output.'
-//         }
-//     }
-// }
-
-
-
 pipeline {
     agent any
 
@@ -104,9 +25,6 @@ pipeline {
         }
 
         stage('Trivy Scan') {
-            when {
-                changeset "frontend/**"
-            }
             steps {
                 sh '''
                     trivy fs \
@@ -120,9 +38,6 @@ pipeline {
         }
 
         stage('Deployment') {
-            when {
-                changeset "frontend/**"
-            }
             steps {
                 sh '''
                     sudo -u ec2-user /usr/bin/git \
@@ -136,9 +51,6 @@ pipeline {
         }
 
         stage('Validation') {
-            when {
-                changeset "frontend/**"
-            }
             steps {
                 sh '''
                     sudo -u ec2-user /usr/bin/docker \
@@ -162,3 +74,91 @@ pipeline {
         }
     }
 }
+
+
+
+// pipeline {
+//     agent any
+
+//     options {
+//         timestamps()
+//         disableConcurrentBuilds()
+//     }
+
+//     environment {
+//         APP_DIR = '/home/ec2-user/online-shopping-platform'
+//         BRANCH = 'main'
+//     }
+
+//     stages {
+
+//         stage('Git Pull') {
+//             steps {
+//                 checkout scm
+
+//                 sh '''
+//                     echo "Frontend source checked out"
+//                     git log -1 --oneline
+//                 '''
+//             }
+//         }
+
+//         stage('Trivy Scan') {
+//             when {
+//                 changeset "frontend/**"
+//             }
+//             steps {
+//                 sh '''
+//                     trivy fs \
+//                       --scanners vuln,misconfig,secret \
+//                       --severity CRITICAL \
+//                       --exit-code 1 \
+//                       --skip-dirs node_modules \
+//                       frontend
+//                 '''
+//             }
+//         }
+
+//         stage('Deployment') {
+//             when {
+//                 changeset "frontend/**"
+//             }
+//             steps {
+//                 sh '''
+//                     sudo -u ec2-user /usr/bin/git \
+//                       -C "$APP_DIR" pull --ff-only origin "$BRANCH"
+
+//                     sudo -u ec2-user /usr/bin/docker \
+//                       compose -f "$APP_DIR/docker-compose.yml" \
+//                       up -d --build --no-deps frontend
+//                 '''
+//             }
+//         }
+
+//         stage('Validation') {
+//             when {
+//                 changeset "frontend/**"
+//             }
+//             steps {
+//                 sh '''
+//                     sudo -u ec2-user /usr/bin/docker \
+//                       compose -f "$APP_DIR/docker-compose.yml" ps frontend
+
+//                     curl -fsS http://127.0.0.1:3000/ > /dev/null
+
+//                     echo "Frontend validation successful"
+//                 '''
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo 'Frontend pipeline completed successfully!'
+//         }
+
+//         failure {
+//             echo 'Frontend pipeline failed. Check console output.'
+//         }
+//     }
+// }
