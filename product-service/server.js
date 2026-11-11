@@ -7,7 +7,7 @@ const productRoutes = require("./routes/productRoutes");
 const app = express();
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://54.173.242.63:3000");
+    res.header("Access-Control-Allow-Origin", "http://34.228.24.183:3000");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
