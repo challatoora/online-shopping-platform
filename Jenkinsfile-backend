@@ -1,0 +1,96 @@
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        APP_DIR = '/home/ec2-user/online-shopping-platform'
+        BRANCH = 'main'
+    }
+
+    stages {
+
+        stage('Git Pull') {
+            steps {
+                checkout scm
+
+                sh '''
+                    echo "Backend source checked out"
+                    git log -1 --oneline
+                '''
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                    trivy fs \
+                      --scanners vuln,misconfig,secret \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 1 \
+                      --skip-dirs node_modules \
+                      user-service
+
+                    trivy fs \
+                      --scanners vuln,misconfig,secret \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 1 \
+                      --skip-dirs node_modules \
+                      product-service
+
+                    trivy fs \
+                      --scanners vuln,misconfig,secret \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 1 \
+                      --skip-dirs node_modules \
+                      order-service
+                '''
+            }
+        }
+
+        stage('Deployment') {
+            steps {
+                sh '''
+                    sudo -u ec2-user /usr/bin/git \
+                      -C "$APP_DIR" pull --ff-only origin "$BRANCH"
+
+                    sudo -u ec2-user /usr/bin/docker \
+                      compose -f "$APP_DIR/docker-compose.yml" \
+                      up -d --build \
+                      user-service product-service order-service
+                '''
+            }
+        }
+
+        stage('Validation') {
+            steps {
+                sh '''
+                    set -e
+
+                    sudo -u ec2-user /usr/bin/docker \
+                      compose -f "$APP_DIR/docker-compose.yml" ps
+
+                    curl -fsS http://127.0.0.1:3001/health
+                    curl -fsS http://127.0.0.1:3002/health
+                    curl -fsS http://127.0.0.1:3003/health
+
+                    echo "Backend validation successful"
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Backend pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Backend pipeline failed. Check console output.'
+        }
+    }
+}
