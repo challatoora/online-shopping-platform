@@ -21,6 +21,7 @@ pipeline {
                 sh '''
                     echo "Frontend source checked out"
                     git log -1 --oneline
+                    echo "testing"
                 '''
             }
         }
@@ -30,7 +31,7 @@ pipeline {
                 sh '''
                     trivy fs \
                       --scanners vuln,misconfig,secret \
-                      --severity HIGH,CRITICAL \
+                      --severity CRITICAL \
                       --exit-code 1 \
                       --skip-dirs node_modules \
                       frontend

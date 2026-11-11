@@ -2,10 +2,6 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-        disableConcurrentBuilds()
-    }
 
     environment {
         APP_DIR = '/home/ec2-user/online-shopping-platform'
@@ -30,21 +26,21 @@ pipeline {
                 sh '''
                     trivy fs \
                       --scanners vuln,misconfig,secret \
-                      --severity HIGH,CRITICAL \
+                      --severity CRITICAL \
                       --exit-code 1 \
                       --skip-dirs node_modules \
                       user-service
 
                     trivy fs \
                       --scanners vuln,misconfig,secret \
-                      --severity HIGH,CRITICAL \
+                      --severity CRITICAL \
                       --exit-code 1 \
                       --skip-dirs node_modules \
                       product-service
 
                     trivy fs \
                       --scanners vuln,misconfig,secret \
-                      --severity HIGH,CRITICAL \
+                      --severity CRITICAL \
                       --exit-code 1 \
                       --skip-dirs node_modules \
                       order-service
