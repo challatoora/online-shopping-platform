@@ -11,7 +11,7 @@ const app = express();
 app.use((req, res, next) => {
     res.header(
         "Access-Control-Allow-Origin",
-        "http://34.228.24.183:3000"
+        "http://100.48.89.167:3000"
     );
 
     res.header(
