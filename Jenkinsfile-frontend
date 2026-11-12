@@ -20,7 +20,7 @@ pipeline {
                 sh '''
                     echo "Frontend source checked out"
                     git log -1 --oneline
-                    echo "Hi"
+                    echo "Hi murali"
                 '''
             }
         }
